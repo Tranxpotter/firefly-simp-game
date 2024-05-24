@@ -1,0 +1,6 @@
+firefly main char
+hsr enemies
+normal punch in firefly mode
+fire kicks in sam mode
+can fly in sam mode
+objective: gain points from collecting oak rolls, increasing difficulty as you progress in a semi-randomized stage
