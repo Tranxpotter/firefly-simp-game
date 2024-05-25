@@ -9,7 +9,7 @@ def main():
     screen = pygame.display.set_mode(SCREEN_SIZE)
     scene_manager = better_pygame.SceneManager(SCREEN_SIZE)
     scenes = {
-        "menu":Menu(scene_manager)
+        "menu":MenuScene(scene_manager)
     }
     scene_manager.init_scenes(scenes)
     

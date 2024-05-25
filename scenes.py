@@ -2,12 +2,12 @@ import pygame
 import pygame_gui
 import better_pygame
 
-class Menu(better_pygame.Scene):
+class MenuScene(better_pygame.Scene):
     def __init__(self, scene_manager:better_pygame.SceneManager) -> None:
         super().__init__(scene_manager)
         self.scene_manager = scene_manager
         self.screen_size = scene_manager.screen_size
-        self.ui_manager = pygame_gui.UIManager(self.screen_size, "themes/menu_theme.json")
+        self.ui_manager = pygame_gui.UIManager(self.screen_size, theme_path="themes/menu_theme.json")
         
         self.bg_img = pygame.image.load("assets/menu_bg.png")
         self.bg_img = pygame.transform.scale(self.bg_img, (1280, 720))
@@ -54,5 +54,25 @@ class Menu(better_pygame.Scene):
     def draw(self, screen: pygame.Surface):
         screen.blit(self.bg_img, (0, 0))
         self.ui_manager.draw_ui(screen)
+    
+
+
+class GameScene(better_pygame.Scene):
+    def __init__(self, scene_manager:better_pygame.SceneManager) -> None:
+        super().__init__(scene_manager)
+        self.scene_manager = scene_manager
+        self.screen_size = scene_manager.screen_size
+        self.ui_manager = pygame_gui.UIManager(self.screen_size)
+    
+    def handle_event(self, event: pygame.Event):
+        pass
+    
+    
+    def update(self, dt: float):
+        pass
+    
+    def draw(self, screen: pygame.Surface):
+        pass
+    
     
     
