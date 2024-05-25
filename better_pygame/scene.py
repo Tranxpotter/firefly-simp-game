@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import TypeVar, Dict
 
 import pygame
 
@@ -21,9 +22,17 @@ class Scene(ABC):
     --------------
     class TitleScene(Scene):
         def __init__(self):
+            #Initialize your elements and objects in the scene here
         
         def handle_event(self, event):
-            if event.type == '''
+            if event.type == ...
+        
+        def update(self, dt):
+            ...
+        
+        def draw(self, screen):
+            ...
+        '''
     
     def __init__(self, scene_manager) -> None:
         self.scene_manager = scene_manager
@@ -45,28 +54,59 @@ class Scene(ABC):
     def set_transition_require_update(self, transition_require_update:bool):
         self._transition_require_update = transition_require_update
 
+SceneType = TypeVar("SceneType", bound=Scene)
+SceneInstanceDict = Dict[str, SceneType]
 class SceneManager:
     '''Manager of Scenes
-    
+
+    Usage
+    -------
+    scene_manager = SceneManager(...)\n
+    scenes = {\n
+        "name":Scene(scene_manager),\n
+        ...\n
+    }\n
+    scene_manager.init_scenes(scenes)\n
+    ...\n
+    while running:\n
+        events = pygame.event.get()\n
+        for event in events:\n
+            scene_manager.handle_event(event)\n
+
+        scene_manager.update(dt)\n
+        scene_manager.draw(screen)\n
     '''
-    def __init__(self, screen_size:tuple[int, int], scenes:dict[str, Scene], default_scene:str|None = None, handle_event_during_transition:bool = False) -> None:
+    def __init__(self, screen_size:tuple[int, int], handle_event_during_transition:bool = False) -> None:
         '''
-        Initialize Scene Manager, scene_manager will be automatically added to the provided scenes as an attribute (scene._scene_manager)
+        Initialize Scene Manager. Be sure to call SceneManager.init_scenes() after initializing all the scenes.
+        
         Parameters
         -----------
         screen_size: tuple[int, int]
             Defaulted screen size
-        scenes: dict[str, Scene]
-            Pass in all the scenes and their key as string as identifier
-        default_scene: str
-            key of the first scene that is selected, if not provided, the first scene provided will be the default
         handle_event_during_transition: bool
             If the scene manager will pass events onto the current scene if a transition is currently running
         '''
+        self.scenes:SceneInstanceDict = {}
         self.screen_size = screen_size
+        
+        self.prev_scene:Scene|None = None
+        self.handle_event_during_transition = handle_event_during_transition
+        
+        self._transitioning:bool = False
+        self._running_transitions:list[Transition] = []
+    
+    def init_scenes(self, scenes:dict[str, SceneType], default_scene:str|None = None):
+        '''Add all scenes provided to SceneManager
+        
+        Parameters
+        -----------
+        scenes: `dict`[`str`:`Scene`]
+            All the scenes to be added, where the key is the name of the scene
+        default_scene: `str`
+            The key to the first scene to be displayed, if not provided, it defaults to the first scene provided in dictionary
+        '''
         self.scenes = scenes
-        for value in self.scenes.values():
-            value.scene_manager = self
         if not default_scene:
             keys = list(scenes.keys())
             if len(keys) > 0:
@@ -82,18 +122,21 @@ class SceneManager:
             print("Scene Manager missing default scene.")
         else:
             self.curr_scene = scenes[self.default_scene]
-        
-        self.prev_scene:Scene|None = None
-        self.handle_event_during_transition = handle_event_during_transition
-        
-        self._transitioning:bool = False
-        self._running_transitions:list[Transition] = []
     
-    def add_scene(self, key:str, scene:Scene):
-        """Add a scene to the manager"""
-        if key in self.scenes.keys():
-            raise KeyError(f"Scene with key {key} already exists")
-        scene.scene_manager = self
+    def add_scene(self, key:str, scene:SceneType, exist_ok:bool = False):
+        """Add a scene to the manager
+        
+        Parameters
+        -------------
+        key: `str`
+            Name of the scene
+        scene: `Scene`
+            Da Scene
+        exist_ok: `bool`
+            If `True`, the new scene replaces the current scene with the provided key.\n
+            If `False`, raises ValueError if a scene with the provided key already exists."""
+        if not exist_ok and key in self.scenes.keys():
+            raise ValueError(f"Scene with key {key} already exists")
         self.scenes[key] = scene
     
     def start_transition(self, transition:Transition, scene:Scene):

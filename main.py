@@ -2,14 +2,19 @@ import pygame
 pygame.init()
 
 import better_pygame
+from scenes import *
 
 def main():
     SCREEN_SIZE = SCREEN_WIDTH, SCREEN_HEIGHT = 1280, 720
     screen = pygame.display.set_mode(SCREEN_SIZE)
-    scenes = {}
+    scene_manager = better_pygame.SceneManager(SCREEN_SIZE)
+    scenes = {
+        "menu":Menu(scene_manager)
+    }
+    scene_manager.init_scenes(scenes)
     
     
-    scene_manager = better_pygame.SceneManager(SCREEN_SIZE, scenes)
+    
     
     running = True
     clock = pygame.time.Clock()
@@ -24,6 +29,7 @@ def main():
         scene_manager.update(dt)
         
         scene_manager.draw(screen)
+        pygame.display.update()
         dt = clock.tick(60)/1000
             
 
