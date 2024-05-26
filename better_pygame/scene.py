@@ -54,8 +54,8 @@ class Scene(ABC):
     def set_transition_require_update(self, transition_require_update:bool):
         self._transition_require_update = transition_require_update
 
-SceneType = TypeVar("SceneType", bound=Scene)
-SceneInstanceDict = Dict[str, SceneType]
+S = TypeVar("S", bound=Scene)
+SceneInstanceDict = Dict[str, S]
 class SceneManager:
     '''Manager of Scenes
 
@@ -96,7 +96,7 @@ class SceneManager:
         self._transitioning:bool = False
         self._running_transitions:list[Transition] = []
     
-    def init_scenes(self, scenes:dict[str, SceneType], default_scene:str|None = None):
+    def init_scenes(self, scenes:dict[str, S], default_scene:str|None = None):
         '''Add all scenes provided to SceneManager
         
         Parameters
@@ -123,7 +123,7 @@ class SceneManager:
         else:
             self.curr_scene = scenes[self.default_scene]
     
-    def add_scene(self, key:str, scene:SceneType, exist_ok:bool = False):
+    def add_scene(self, key:str, scene:S, exist_ok:bool = False):
         """Add a scene to the manager
         
         Parameters
