@@ -15,5 +15,7 @@ class EventManager:
     def update(self):
         for event in self.events:
             #Find the suitable objects for the event
-            pass
-            
+            args_type = event.get_event_arguments()
+            args = [arg_type.get(self.game_manager) for arg_type in args_type]
+            event.run(*args)
+        

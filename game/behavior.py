@@ -1,17 +1,7 @@
-from abc import ABC, abstractmethod
 import math
 
 
-class Behavior(ABC):
-    @abstractmethod
-    def handle_event(self, event) -> None:...
-    
-    @abstractmethod
-    def update(self, dt:float) -> None:...
-    
-    @abstractmethod
-    def draw(self, screen) -> None:...
-
+from .abc import Behavior
 from .game_object import GameObject
 
 class Anchor(Behavior):

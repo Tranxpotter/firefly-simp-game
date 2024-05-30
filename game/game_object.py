@@ -1,8 +1,8 @@
-from typing import TypeVar, Any
+from typing import TypeVar, Any, Sequence
 
 import pygame
 
-from .behavior import Behavior
+from .abc import Behavior
 
 B = TypeVar("B", bound=Behavior)
 class GameObject:
@@ -16,13 +16,14 @@ class GameObject:
         
         return instance
     
-    def __init__(self, game_manager, position:tuple[float, float], size:tuple[float, float], velocity:tuple[float, float] = (0, 0), properties:list[B] = []) -> None:
+    def __init__(self, game_manager, position:tuple[float, float], size:tuple[float, float], velocity:tuple[float, float] = (0, 0), properties:Sequence[B] = []) -> None:
         self.game_manager = game_manager
         game_manager.add_object(self)
         self.position = self.x, self.y = position
         self.size = self.width, self.height = size
         self.velocity = self.velocity_x, self.velocity_y = velocity
         self.properties = properties
+        self.alive = True
     
     @property
     def rect(self):
@@ -33,7 +34,8 @@ class GameObject:
         return self.width * self.height
     
     def on_destroy(self):
-        self.game_manager.delete_object(self)
+        self.game_manager.req_delete_object(self)
+        self.alive = False
     
     
     

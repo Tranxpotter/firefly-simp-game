@@ -1,32 +1,44 @@
 # Collision between circle and rectangle to be added!
 
 from abc import ABC, abstractmethod
-from typing import TypeVar, Type, Callable, Tuple, Literal, Iterable
+from typing import TypeVar, Type, Callable, Tuple, Literal, Sequence, TypeAlias, List
 from dataclasses import dataclass
 
-from .event_args import _EventArgType, ObjectsArg
+from .event_args import EventArgument, ObjectsArg
 from ..game_object import GameObject
 
 GameObj = TypeVar("GameObj", bound=GameObject)
-E_Arg = TypeVar("E_Arg", bound=_EventArgType)
+EventArguments:TypeAlias = List[EventArgument]
 
-
+def _get_types_str(items:Sequence):
+    return "(" + ", ".join([str(type(item)) for item in items]) + ")"
 
 class Event(ABC):
     @abstractmethod
-    def run(self, *args, **kwargs):...
+    def run(self, *args):...
+    """
+    Runs the event with the provided arguments.
+    
+    Args:
+        *args: Variable length argument list to be passed to the event.
+    """
     
     @abstractmethod
-    def get_run_args(self) -> list[_EventArgType]:...
+    def get_event_arguments(self) -> EventArguments:...
+    """
+    Returns the arguments for the current event.
     
-    def _get_run_args_str(self) -> str:
-        return "(" + ", ".join([str(arg) for arg in self.get_run_args()]) + ")"
-        
-from .manager import EventManager
+    Returns:
+        EventArguments: The arguments for the current event.
+    """
+    
+    def _get_expected_run_args_str(self) -> str:
+        return "(" + ", ".join([str(arg.get_expected_return_type()) for arg in self.get_event_arguments()]) + ")"
 
-class Collision(Event):
-    def __init__(self, cls1:Type[GameObj], cls2:Type[GameObj], action:Callable[[GameObj, GameObj], None]) -> None:
-        self.check_classes = self.cls1, self.cls2 = cls1, cls2
+
+class CollisionEvent(Event):
+    def __init__(self, object_type_1:Type[GameObj], object_type_2:Type[GameObj], action:Callable[[GameObj, GameObj], None]) -> None:
+        self.check_classes = self.object_type_1, self.object_type_2 = object_type_1, object_type_2
         self.action = action
     
     @staticmethod
@@ -44,20 +56,21 @@ class Collision(Event):
         
         return True
     
-    def run(self, *args, **kwargs):
+    def run(self, *args):
         objs1, objs2, *_ = args
-        if not isinstance(objs1, Iterable) or not isinstance(objs2, Iterable) or _:
-            raise TypeError(f"Argument type mismatch. Expected: {self._get_run_args_str()}, Got: ({Type(objs1)}, {Type(objs2)})")
+        if not isinstance(objs1, Sequence) or not isinstance(objs2, Sequence):
+            raise TypeError(f"Argument type mismatch. Expected: {self._get_expected_run_args_str()}, Got: {_get_types_str(args)}")
+        
         for obj1 in objs1:
             for obj2 in objs2:
-                if not isinstance(obj1, self.cls1) or not isinstance(obj2, self.cls2):
-                    raise TypeError(f"Types of objects given not match types expected. {type(obj1)}->{self.cls1}, {type(obj2)}->{self.cls2}")
+                if not isinstance(obj1, self.object_type_1) or not isinstance(obj2, self.object_type_2):
+                    raise TypeError(f"Types of objects given not match types expected. {type(obj1)}->{self.object_type_1}, {type(obj2)}->{self.object_type_2}")
                 if not self.is_colliding(obj1, obj2):
                     continue
                 self.action(obj1, obj2)
     
-    def get_run_args(self) -> list[_EventArgType]:
-        return [ObjectsArg(self.cls1), ObjectsArg(self.cls2)]
+    def get_event_arguments(self) -> EventArguments:
+        return [ObjectsArg(self.object_type_1), ObjectsArg(self.object_type_2)]
 
 @dataclass
 class OverlapInfo:
@@ -66,9 +79,9 @@ class OverlapInfo:
     percentage2:float
     
 
-class Overlap(Event):
-    def __init__(self, cls1:Type[GameObj], cls2:Type[GameObj], action:Callable[[GameObj, GameObj, OverlapInfo], None]) -> None:
-        self.check_classes = self.cls1, self.cls2 = cls1, cls2
+class OverlapEvent(Event):
+    def __init__(self, object_type_1:Type[GameObj], object_type_2:Type[GameObj], action:Callable[[GameObj, GameObj, OverlapInfo], None]) -> None:
+        self.check_classes = self.object_type_1, self.object_type_2 = object_type_1, object_type_2
         self.action = action
     
     @staticmethod
@@ -89,14 +102,14 @@ class Overlap(Event):
         
         return True, overlap_x * overlap_y
     
-    def run(self, *args, **kwargs):
+    def run(self, *args):
         objs1, objs2, *_ = args
-        if not isinstance(objs1, Iterable) or not isinstance(objs2, Iterable) or _:
-            raise TypeError(f"Argument type mismatch. Expected: {self._get_run_args_str()}, Got: ({Type(objs1)}, {Type(objs2)})")
+        if not isinstance(objs1, Sequence) or not isinstance(objs2, Sequence):
+            raise TypeError(f"Argument type mismatch. Expected: {self._get_expected_run_args_str()}, Got: ({Type(objs1)}, {Type(objs2)})")
         for obj1 in objs1:
             for obj2 in objs2:
-                if not isinstance(obj1, self.cls1) or not isinstance(obj2, self.cls2):
-                    raise TypeError(f"Types of objects given not match types expected. {type(obj1)}->{self.cls1}, {type(obj2)}->{self.cls2}")
+                if not isinstance(obj1, self.object_type_1) or not isinstance(obj2, self.object_type_2):
+                    raise TypeError(f"Types of objects given not match types expected. {type(obj1)}->{self.object_type_1}, {type(obj2)}->{self.object_type_2}")
                 overlapping, area = self.is_overlapping(obj1, obj2)
                 if not overlapping:
                     continue
@@ -104,5 +117,5 @@ class Overlap(Event):
                 overlap_info = OverlapInfo(area, obj1.area/area, obj2.area/area)
                 self.action(obj1, obj2, overlap_info)
     
-    def get_run_args(self) -> list[_EventArgType]:
-        return [ObjectsArg(self.cls1), ObjectsArg(self.cls2)]
+    def get_event_arguments(self) -> EventArguments:
+        return [ObjectsArg(self.object_type_1), ObjectsArg(self.object_type_2)]

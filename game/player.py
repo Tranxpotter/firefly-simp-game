@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pygame
 
@@ -13,7 +13,7 @@ class Player:
     position:tuple[int]
     width:int = 20
     height:int = 40
-    effects:dict = {}
+    effects:dict = field(default_factory=dict)
     
     
     
