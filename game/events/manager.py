@@ -2,13 +2,10 @@ from typing import Mapping, TypeVar, Sequence
 
 
 from .event import Event
-from game_object import GameObject
-
-GameObj = TypeVar("GameObj", bound=GameObject)
-E = TypeVar("E", bound=Event)
+from .._typevars import GameObj
 
 class EventManager:
-    def __init__(self, events:list[E], game_manager) -> None:
+    def __init__(self, events:list[Event], game_manager) -> None:
         self.events = events
         self.game_manager = game_manager
     

@@ -1,13 +1,12 @@
 # Collision between circle and rectangle to be added!
 
 from abc import ABC, abstractmethod
-from typing import TypeVar, Type, Callable, Tuple, Literal, Sequence, TypeAlias, List
+from typing import TypeVar, Type, Callable, Tuple, Literal, Sequence, TypeAlias, List, Generic
 from dataclasses import dataclass
 
+from ..abc import GameObject
 from .event_args import EventArgument, ObjectsArg
-from ..game_object import GameObject
 
-GameObj = TypeVar("GameObj", bound=GameObject)
 EventArguments:TypeAlias = List[EventArgument]
 
 def _get_types_str(items:Sequence):
@@ -37,12 +36,12 @@ class Event(ABC):
 
 
 class CollisionEvent(Event):
-    def __init__(self, object_type_1:Type[GameObj], object_type_2:Type[GameObj], action:Callable[[GameObj, GameObj], None]) -> None:
+    def __init__(self, object_type_1:Type[GameObject], object_type_2:Type[GameObject], action:Callable[[GameObject, GameObject], None]) -> None:
         self.check_classes = self.object_type_1, self.object_type_2 = object_type_1, object_type_2
         self.action = action
     
     @staticmethod
-    def is_colliding(obj1:GameObj, obj2:GameObj):
+    def is_colliding(obj1:GameObject, obj2:GameObject):
         left1, top1, width1, height1 = obj1.rect
         right1, bottom1 = left1 + width1, top1 + height1
         
@@ -80,12 +79,12 @@ class OverlapInfo:
     
 
 class OverlapEvent(Event):
-    def __init__(self, object_type_1:Type[GameObj], object_type_2:Type[GameObj], action:Callable[[GameObj, GameObj, OverlapInfo], None]) -> None:
+    def __init__(self, object_type_1:Type[GameObject], object_type_2:Type[GameObject], action:Callable[[GameObject, GameObject, OverlapInfo], None]) -> None:
         self.check_classes = self.object_type_1, self.object_type_2 = object_type_1, object_type_2
         self.action = action
     
     @staticmethod
-    def is_overlapping(obj1:GameObj, obj2:GameObj) -> tuple[bool, float]:
+    def is_overlapping(obj1:GameObject, obj2:GameObject) -> tuple[bool, float]:
         left1, top1, width1, height1 = obj1.rect
         right1, bottom1 = left1 + width1, top1 + height1
         

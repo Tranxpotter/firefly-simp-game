@@ -1,15 +1,20 @@
 from typing import Any, TypeVar, Type, Generic
 
+from .abc import GameObject
 from .player import Player
+from .behaviors.behavior import Behavior
+from .events import Event, EventManager, EventArgument
+
+
 
 class GameManager:
-    def __init__(self, screen_size:tuple[float, float]) -> None:
+    def __init__(self, screen_size:tuple[float, float], events:list[Event]) -> None:
         self.screen_size = screen_size
         
-        self.game_objects:dict[Any, set[Any]] = {}
+        self.game_objects:dict[Type[GameObject], set[GameObject]] = {}
         self._objs_to_remove:set[Any] = set()
 
-    def add_object(self, obj):
+    def add_object(self, obj:GameObject):
         """
         Adds the given object `obj` to the appropriate collection in `self.game_objects`.
         """
@@ -18,7 +23,11 @@ class GameManager:
         else:
             self.game_objects[type(obj)] = {obj}
     
-    def req_delete_object(self, obj) -> bool:
+    def add_objects(self, objs:list[GameObject]):
+        for obj in objs:
+            self.add_object(obj)
+    
+    def req_delete_object(self, obj:GameObject) -> bool:
         """
         Request to delete the given object from the game_objects dictionary. Provides a warning if the object cannot be found.
         
@@ -43,7 +52,7 @@ class GameManager:
         for obj_to_rm in self._objs_to_remove:
             self.game_objects[type(obj_to_rm)].remove(obj_to_rm)
 
-    def delete_object(self, obj) -> None:
+    def delete_object(self, obj:GameObject) -> None:
         """
         Deletes the specified object from the game object manager.
         
@@ -59,3 +68,6 @@ class GameManager:
             self.game_objects[type(obj)].remove(obj)
         except KeyError as e:
             raise KeyError(f"Cannot find object to be deleted. {obj} not exist in game_objects[{type(obj)}]")
+    
+    def delete_all_objects(self) -> None:
+        self.game_objects = {}

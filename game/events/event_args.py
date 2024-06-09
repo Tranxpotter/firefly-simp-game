@@ -2,9 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Sequence, TypeVar, Type, Set, Callable, Tuple, Literal, Any, Generic
 
 from ..game_manager import GameManager
-from ..game_object import GameObject
-
-GameObj = TypeVar("GameObj", bound=GameObject)
+from .._typevars import GameObj
 
 class EventArgument(ABC):
     @abstractmethod
